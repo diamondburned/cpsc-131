@@ -1,0 +1,16 @@
+﻿---
+BasedOnStyle: Google
+AccessModifierOffset: '-4'
+AlignAfterOpenBracket: AlwaysBreak
+ColumnLimit: '100'
+DerivePointerAlignment: 'true'
+IndentCaseLabels: 'false'
+IndentWidth: '4'
+IndentWrappedFunctionNames: 'false'
+Language: Cpp
+NamespaceIndentation: None
+PointerAlignment: Left
+TabWidth: '4'
+UseTab: ForContinuationAndIndentation
+
+...
