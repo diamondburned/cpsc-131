@@ -37,6 +37,11 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 
 	PROJECT_ROOT = builtins.toString ./.;
 
+	# Compliance_Workarounds is omitted because clang++ really doesn't want to
+	# see chrono::hh_mm_ss.
+	#
+	#    -include ${PROJECT_ROOT}/Compliance_Workarounds.hpp
+
 	clangFlags = ''
 		-g0
 		-O3
@@ -46,7 +51,7 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 		-I./
 		-DUSING_TOMS_SUGGESTIONS
 		-D__func__=__PRETTY_FUNCTION__
-		-stdlib=libc++
+		-stdlib=libstdc++
 		-Weverything
 		-Wno-comma
 		-Wno-unused-template
@@ -65,7 +70,6 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 		-fdiagnostics-show-category=name
 		-Wno-zero-as-null-pointer-constant
 		-Wno-ctad-maybe-unsupported
-		-include ${PROJECT_ROOT}/Compliance_Workarounds.hpp
 	'';
 
 	gccFlags = ''
@@ -97,7 +101,6 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 		-Wswitch-enum
 		-Woverloaded-virtual
 		-Wuseless-cast
-		-include ${PROJECT_ROOT}/Compliance_Workarounds.hpp
 	'';
 
 	writeText = name: text:
@@ -116,9 +119,7 @@ in gccShell ((import ./secrets.nix) // {
 
 	buildInputs = [ intel2GAS clangd ] ++ (with pkgs; [
 		gcc11
-		gcc11.cc.lib
 		llvmPackages_latest.clang
-		# llvmPackages_latest.libstdcxxClang
 
 		intel2GAS
 		a2ps

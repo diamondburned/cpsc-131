@@ -8,11 +8,10 @@ flagfile() {
 executableFileName=$(basename "$PWD")
 sourceFiles=( $(find ./ -path ./.\* -prune -o -name "*.cpp" -print) )
 
-g++ \
-	$(flagfile compile_flags_g++.txt) \
-	-o "${executableFileName}_g++" "${sourceFiles[@]}"
-
 clang++ \
 	$(flagfile compile_flags.txt) \
 	-o "${executableFileName}_clang++" "${sourceFiles[@]}"
 
+g++ \
+	$(flagfile compile_flags_g++.txt) \
+	-o "${executableFileName}_g++" "${sourceFiles[@]}"

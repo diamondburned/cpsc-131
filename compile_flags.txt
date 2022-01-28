@@ -6,7 +6,7 @@
 		-I./
 		-DUSING_TOMS_SUGGESTIONS
 		-D__func__=__PRETTY_FUNCTION__
-		-stdlib=libc++
+		-stdlib=libstdc++
 		-Weverything
 		-Wno-comma
 		-Wno-unused-template
@@ -25,5 +25,4 @@
 		-fdiagnostics-show-category=name
 		-Wno-zero-as-null-pointer-constant
 		-Wno-ctad-maybe-unsupported
-		-include /home/diamond/Scripts/cpsc-131/Compliance_Workarounds.hpp
 	

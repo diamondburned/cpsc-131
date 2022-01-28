@@ -26,5 +26,4 @@
 		-Wswitch-enum
 		-Woverloaded-virtual
 		-Wuseless-cast
-		-include /home/diamond/Scripts/cpsc-131/Compliance_Workarounds.hpp
 	
