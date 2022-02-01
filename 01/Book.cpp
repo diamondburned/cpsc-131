@@ -55,68 +55,80 @@ namespace    // unnamed, anonymous namespace
 
 // Default and Conversion Constructor
 Book::Book( std::string title, std::string author, std::string isbn, double price )
-    ///////////////////////// TO-DO (2) //////////////////////////////
-
-    /////////////////////// END-TO-DO (2) ////////////////////////////
-
-
-
-
-    // Copy constructor
-    Book::Book( Book const & other )
-    ///////////////////////// TO-DO (3) //////////////////////////////
-
-    /////////////////////// END-TO-DO (3) ////////////////////////////
+  ///////////////////////// TO-DO (2) //////////////////////////////
+  : _isbn( std::move( isbn ) ),
+    _title( std::move( title ) ),
+    _author( std::move( author ) ),
+    _price( price )
+{}
+/////////////////////// END-TO-DO (2) ////////////////////////////
 
 
 
 
-    // Move constructor
-    Book::Book( Book && other ) noexcept
-    ///////////////////////// TO-DO (4) //////////////////////////////
-
-    /////////////////////// END-TO-DO (4) ////////////////////////////
-
-
-
-
-    // Copy Assignment Operator
-    Book & Book::operator=( Book const & rhs )
-    &
-    ///////////////////////// TO-DO (5) //////////////////////////////
-
-    /////////////////////// END-TO-DO (5) ////////////////////////////
+// Copy constructor
+Book::Book( Book const & other ) = default;
+///////////////////////// TO-DO (3) //////////////////////////////
+// Handled by "= default".
+/////////////////////// END-TO-DO (3) ////////////////////////////
 
 
 
 
-    // Move Assignment Operator
-    Book & Book::operator=( Book && rhs ) & noexcept
-    ///////////////////////// TO-DO (6) //////////////////////////////
-
-    /////////////////////// END-TO-DO (6) ////////////////////////////
-
-
-
-    // Destructor
-    Book::~Book() noexcept
-    ///////////////////////// TO-DO (7) //////////////////////////////
-
-    /////////////////////// END-TO-DO (7) ////////////////////////////
+// Move constructor
+Book::Book( Book && other ) noexcept
+  ///////////////////////// TO-DO (4) //////////////////////////////
+  : _isbn( std::move( other._isbn ) ),
+    _title( std::move( other._title ) ),
+    _author( std::move( other._author ) ),
+    _price( other._price )
+{
+}
+/////////////////////// END-TO-DO (4) ////////////////////////////
 
 
 
 
+// Copy Assignment Operator
+Book & Book::operator=( Book const & rhs ) & = default;
+///////////////////////// TO-DO (5) //////////////////////////////
+/////////////////////// END-TO-DO (5) ////////////////////////////
 
 
 
 
-    /*******************************************************************************
+// Move Assignment Operator
+Book & Book::operator=( Book && rhs ) & noexcept
+///////////////////////// TO-DO (6) //////////////////////////////
+{
+  _isbn   = std::move( rhs._isbn );
+  _title  = std::move( rhs._title );
+  _author = std::move( rhs._author );
+  _price  = rhs._price;
+  return *this;
+}
+/////////////////////// END-TO-DO (6) ////////////////////////////
+
+
+
+// Destructor
+Book::~Book() noexcept = default;
+///////////////////////// TO-DO (7) //////////////////////////////
+/////////////////////// END-TO-DO (7) ////////////////////////////
+
+
+
+
+
+
+
+
+/*******************************************************************************
 **  Accessors
 *******************************************************************************/
 
-    // isbn() const
-    std::string const & Book::isbn() const &
+// isbn() const
+std::string const & Book::isbn() const &
 {
   ///////////////////////// TO-DO (8) //////////////////////////////
   return _isbn;
@@ -162,7 +174,7 @@ double Book::price() const &
 std::string Book::isbn() &&
 {
   ///////////////////////// TO-DO (12) //////////////////////////////
-  return std::copy( _isbn );
+  return std::move( _isbn );
   /////////////////////// END-TO-DO (12) ////////////////////////////
 }
 
@@ -173,7 +185,7 @@ std::string Book::isbn() &&
 std::string Book::title() &&
 {
   ///////////////////////// TO-DO (13) //////////////////////////////
-  return std::copy( _title );
+  return std::move( _title );
   /////////////////////// END-TO-DO (13) ////////////////////////////
 }
 
@@ -184,7 +196,7 @@ std::string Book::title() &&
 std::string Book::author() &&
 {
   ///////////////////////// TO-DO (14) //////////////////////////////
-  return std::copy( _author );
+  return std::move( _author );
   /////////////////////// END-TO-DO (14) ////////////////////////////
 }
 
@@ -203,7 +215,8 @@ std::string Book::author() &&
 Book & Book::isbn( std::string newIsbn ) &
 {
   ///////////////////////// TO-DO (15) //////////////////////////////
-  _isbn = newIsbn;
+  _isbn = std::move( newIsbn );
+  return *this;
   /////////////////////// END-TO-DO (15) ////////////////////////////
 }
 
@@ -214,7 +227,8 @@ Book & Book::isbn( std::string newIsbn ) &
 Book & Book::title( std::string newTitle ) &
 {
   ///////////////////////// TO-DO (16) //////////////////////////////
-  _title = newTitle;
+  _title = std::move( newTitle );
+  return *this;
   /////////////////////// END-TO-DO (16) ////////////////////////////
 }
 
@@ -225,7 +239,8 @@ Book & Book::title( std::string newTitle ) &
 Book & Book::author( std::string newAuthor ) &
 {
   ///////////////////////// TO-DO (17) //////////////////////////////
-  _author = newAuthor;
+  _author = std::move( newAuthor );
+  return *this;
   /////////////////////// END-TO-DO (17) ////////////////////////////
 }
 
@@ -237,6 +252,7 @@ Book & Book::price( double newPrice ) &
 {
   ///////////////////////// TO-DO (18) //////////////////////////////
   _price = newPrice;
+  return *this;
   /////////////////////// END-TO-DO (18) ////////////////////////////
 }
 
@@ -250,6 +266,19 @@ Book & Book::price( double newPrice ) &
 /*******************************************************************************
 **  Relational Operators
 *******************************************************************************/
+
+template<typename T>
+bool set_weak_cmp( T lhs, T rhs, std::weak_ordering & out )
+{
+  if( lhs < rhs )
+    out = std::weak_ordering::less;
+  else if( lhs > rhs )
+    out = std::weak_ordering::greater;
+  else
+    return false;
+
+  return true;
+}
 
 // operator<=>
 std::weak_ordering Book::operator<=>( const Book & rhs ) const noexcept
@@ -281,7 +310,19 @@ std::weak_ordering Book::operator<=>( const Book & rhs ) const noexcept
   // (sorted) by ISBN, author, title, then price.
 
   ///////////////////////// TO-DO (19) //////////////////////////////
+  if(
+      _isbn == rhs._isbn
+      && _author == rhs._author
+      && _title == rhs._title
+      && floating_point_is_equal( _price, rhs._price ) ) return std::weak_ordering::equivalent;
 
+  auto c = std::weak_ordering::equivalent;
+  if( set_weak_cmp( _isbn, rhs._isbn, c ) ) return c;
+  if( set_weak_cmp( _author, rhs._author, c ) ) return c;
+  if( set_weak_cmp( _title, rhs._title, c ) ) return c;
+  if( set_weak_cmp( _price, rhs._price, c ) ) return c;
+
+  return std::weak_ordering::equivalent;
   /////////////////////// END-TO-DO (19) ////////////////////////////
 }
 
@@ -295,7 +336,10 @@ bool Book::operator==( const Book & rhs ) const noexcept
   // and then the most likely to be different first.
 
   ///////////////////////// TO-DO (20) //////////////////////////////
-  return _price == rhs._price;
+  return floating_point_is_equal( _price, rhs._price )
+      && _isbn == rhs._isbn
+      && _title == rhs._title
+      && _author == rhs._author;
   /////////////////////// END-TO-DO (20) ////////////////////////////
 }
 
@@ -309,6 +353,16 @@ bool Book::operator==( const Book & rhs ) const noexcept
 /*******************************************************************************
 **  Insertion and Extraction Operators
 *******************************************************************************/
+
+// assert_comma_next throws an exception if the next token read from stream is
+// not a comma.
+std::istream & assert_comma( std::istream & stream )
+{
+  std::string comma;
+  stream >> comma;
+  if( comma != "," ) throw "Expected comma, got " + comma;
+  return stream;
+}
 
 // operator>>
 std::istream & operator>>( std::istream & stream, Book & book )
@@ -330,7 +384,12 @@ std::istream & operator>>( std::istream & stream, Book & book )
   /// Hint:  Use std::quoted to read and write quoted strings.  See
   ///        1) https://en.cppreference.com/w/cpp/io/manip/quoted
   ///        2) https://www.youtube.com/watch?v=Mu-GUZuU31A
-
+  stream
+      >> std::quoted( book._isbn ) >> assert_comma
+      >> std::quoted( book._title ) >> assert_comma
+      >> std::quoted( book._author ) >> assert_comma
+      >> book._price;
+  return stream;
   /////////////////////// END-TO-DO (21) ////////////////////////////
 }
 
@@ -342,6 +401,11 @@ std::ostream & operator<<( std::ostream & stream, const Book & book )
 {
   ///////////////////////// TO-DO (22) //////////////////////////////
   /// This function should be symmetrical with operator>> above.  Read what your write, and write what you read
-
+  stream
+      << std::quoted( book._isbn ) << ", "
+      << std::quoted( book._title ) << ", "
+      << std::quoted( book._author ) << ", "
+      << book._price;
+  return stream;
   /////////////////////// END-TO-DO (22) ////////////////////////////
 }
