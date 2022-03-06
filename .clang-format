@@ -64,7 +64,7 @@ BreakConstructorInitializers: BeforeColon
 BreakAfterJavaFieldAnnotations: false
 BreakStringLiterals: true
 ColumnLimit:     0
-CommentPragmas:  '^ IWYU pragma:'
+CommentPragmas:  '(^ IWYU pragma:| *\/+ (?:END-)?TO-DO \(\d+\) \/+)'
 CompactNamespaces: true
 ConstructorInitializerAllOnOneLineOrOnePerLine: true
 ConstructorInitializerIndentWidth: 2
