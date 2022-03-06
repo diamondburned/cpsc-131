@@ -1,6 +1,16 @@
-{ pkgs ? import <nixpkgs> {} }:
+{ systemPkgs ? import <nixpkgs> {} }:
 
-let intel2GAS = pkgs.stdenv.mkDerivation rec {
+# let src = systemPkgs.fetchFromGitHub {
+# 		owner = "NixOS";
+# 		repo  = "nixpkgs";
+# 		rev   = "48d63e9";
+# 		hash  = "sha256:0dcxc4yc2y5z08pmkmjws4ir0r2cbc5mha2a48bn0bk7nxc6wx8g";
+# 	};
+
+# 	pkgs = import (src) {};
+let pkgs = systemPkgs;
+
+	intel2GAS = pkgs.stdenv.mkDerivation rec {
 		name = "intel2GAS";
 	
 		src = builtins.fetchurl {
@@ -15,6 +25,7 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 			export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -fpermissive"
 		'';
 	};
+
 
 	# clangd hack.
 	clangd = pkgs.writeScriptBin "clangd" ''
@@ -43,8 +54,8 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 	#    -include ${PROJECT_ROOT}/Compliance_Workarounds.hpp
 
 	clangFlags = ''
-		-g0
-		-O3
+		-g
+		-O1
 		-DNDEBUG
 		-pthread
 		-std=c++20
@@ -73,8 +84,8 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 	'';
 
 	gccFlags = ''
-		-g0
-		-O3
+		-g
+		-O1
 		-DNDEBUG
 		-pthread
 		-std=c++20
@@ -107,7 +118,7 @@ let intel2GAS = pkgs.stdenv.mkDerivation rec {
 		let dst = pkgs.writeTextDir name text;
 		in "${dst}/${name}";
 
-in gccShell ((import ./secrets.nix) // {
+in gccShell {
 	# Poke a PWD hole for our shell scripts to utilize.
 	inherit PROJECT_ROOT;
 
@@ -141,6 +152,7 @@ in gccShell ((import ./secrets.nix) // {
 
 		# Shell scripts.
 		(pkgs.writeShellScriptBin "build.sh" (builtins.readFile ./build.sh))
+		(pkgs.writeShellScriptBin "Build.sh" (builtins.readFile ./build.sh))
 		(pkgs.writeShellScriptBin "clean.sh" (builtins.readFile ./clean.sh))
 		
 		# Google Test Libraries.
@@ -149,4 +161,4 @@ in gccShell ((import ./secrets.nix) // {
 
 		gnome3.seahorse
 	]);
-})
+}

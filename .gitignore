@@ -1,3 +1,7 @@
 *.pdf
 *.bak
+*.zip
+*_clang++
+*_g++
 secrets.nix
+output.txt
