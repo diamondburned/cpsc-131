@@ -135,7 +135,7 @@ in gccShell {
 		(pkgs.writeShellScriptBin "clean.sh" (builtins.readFile ./clean.sh))
 		# Apparently we get a clang-format that doesn't fucking work. Using clang-format makes the
 		# autograder flag the assignment to an F. Brilliant! Fucking lovely!
-		(pkgs.writeShellScriptBin "clang-format" "cat")
+		(pkgs.writeShellScriptBin "clang-format" ''sed "s/\t/  /g"'')
 
 		gcc11
 		llvmPackages_latest.clang
