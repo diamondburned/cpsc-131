@@ -6,6 +6,9 @@
   ///
   /// Do not put anything else in this section, i.e. comments, classes, functions, etc.  Only #include directives
 
+#include <vector>
+#include "Book.hpp"
+
 /////////////////////// END-TO-DO (1) ////////////////////////////
 
 
@@ -31,6 +34,9 @@ class BookDatabase
     ///////////////////////// TO-DO (2) //////////////////////////////
       /// Private implementation details
       /// Add any necessary private helper functions, member attributes, etc.
+
+    Book* find_rec(const std::string& isbn, auto iter);
+    std::vector<Book> books = {};
 
     /////////////////////// END-TO-DO (2) ////////////////////////////
 };

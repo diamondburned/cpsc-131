@@ -103,6 +103,21 @@ namespace
     ///////////////////////// TO-DO (1) //////////////////////////////
       /// Implement the algorithm above.
 
+    auto move_top = [](std::stack<Book>& from, std::stack<Book>& to) {
+      to.push(from.top());
+      from.pop();
+    };
+
+    if (quantity == 1) {
+      move_top(broken_cart, working_cart);
+      trace(broken_cart, working_cart, spare_cart);
+    } else {
+      carefully_move_books(quantity-1, broken_cart, spare_cart, working_cart);
+      move_top(broken_cart, working_cart);
+      trace(broken_cart, working_cart, spare_cart);
+      carefully_move_books(quantity-1, spare_cart, working_cart, broken_cart);
+    }
+
     /////////////////////// END-TO-DO (1) ////////////////////////////
   }
 
@@ -116,6 +131,11 @@ namespace
       /// cart while ensuring the breakable books are always on top of the nonbreakable books, just like they already are in the
       /// "from" cart.  That is, call the above carefully_move_books function to start moving books recursively.  Call the above
       /// trace function just before calling carefully_move_books to get a starting point reference in the movement report.
+
+    std::stack<Book> spare;
+    trace(from, to, spare);
+
+    if (!from.empty()) carefully_move_books(from.size(), from, to, spare);
 
     /////////////////////// END-TO-DO (2) ////////////////////////////
   }
@@ -131,6 +151,7 @@ int main( int argc, char * argv[] )
   ///////////////////////// TO-DO (3) //////////////////////////////
     /// Create an empty book cart as a stack of books and call it myCart.
 
+  std::stack<Book> myCart;
   /////////////////////// END-TO-DO (3) ////////////////////////////
 
 
@@ -149,6 +170,11 @@ int main( int argc, char * argv[] )
     ///      9780399576775    Eat pray love       Asher
     ///      9780545310581    Hunger Games        any                     <===  heaviest book, put this on the bottom
 
+  myCart.push(Book("Hunger Games", "any", "9780545310581"));
+  myCart.push(Book("Eat pray love", "Asher", "9780399576775"));
+  myCart.push(Book("Les Mis", "any", "0140444300"));
+  myCart.push(Book("131 Answer Key", "any", "54782169785"));
+  myCart.push(Book("Like the Animals", "any", "9780895656926"));
   /////////////////////// END-TO-DO (4) ////////////////////////////
 
 
@@ -159,6 +185,8 @@ int main( int argc, char * argv[] )
     /// Create an empty book cart as a stack of books and call it workingCart.  Then carefully move the books in your now broken
     /// cart to this working cart by calling the above carefully_move_books function with two arguments.
 
+  std::stack<Book> workingCart;
+  carefully_move_books(myCart, workingCart);
   /////////////////////// END-TO-DO (5) ////////////////////////////
 
 
@@ -169,6 +197,11 @@ int main( int argc, char * argv[] )
     /// Create an empty checkout counter as a queue of books and call it checkoutCounter.  Then remove the books
     /// from your working cart and place them on the checkout counter, i.e., put them in this checkoutCounter queue.
 
+  std::queue<Book> checkoutCounter;
+  while (!workingCart.empty()) {
+    checkoutCounter.push(workingCart.top());
+    workingCart.pop();
+  }
   /////////////////////// END-TO-DO (6) ////////////////////////////
 
 
@@ -184,6 +217,21 @@ int main( int argc, char * argv[] )
     /// found in the database then accumulate the amount due and print the book's full description and price on the receipt (i.e.
     /// write the book's full description and price to standard output).  Otherwise, print a message on the receipt that a
     /// description and price for the book wasn't found and there will be no charge.
+
+  while (!checkoutCounter.empty()) {
+    auto book = checkoutCounter.front();
+    checkoutCounter.pop();
+
+    auto *bookEntry = storeDataBase.find(book.isbn());
+    if (bookEntry != nullptr) {
+      amountDue += bookEntry->price();
+      std::cout << *bookEntry << "\n";
+    } else {
+      std::cout
+        << '"' << book.isbn() << '"' << " "
+        << "(" << book.title() << ") not found, book is free!\n";
+    }
+  }
 
   /////////////////////// END-TO-DO (7) ////////////////////////////
 

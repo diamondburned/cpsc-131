@@ -4,6 +4,11 @@
   ///
   /// Do not put anything else in this section, i.e. comments, classes, functions, etc.  Only #include directives
 
+#include <fstream>
+#include <filesystem>
+#include "Book.hpp"
+#include "BookDatabase.hpp"
+
 /////////////////////// END-TO-DO (1) ////////////////////////////
 
 
@@ -55,6 +60,11 @@ BookDatabase::BookDatabase( const std::string & filename )
     /// Hint:  Use your Book's extraction operator to read Books, don't reinvent that here.
     ///        Read books until end of file pushing each book into the data store as they're read.
 
+  Book tmp;
+  while (fin >> tmp) {
+    books.push_back(tmp);
+  }
+
   /////////////////////// END-TO-DO (2) ////////////////////////////
 
   // Note:  The file is intentionally not explicitly closed.  The file is closed when fin goes out of scope - for whatever
@@ -80,5 +90,22 @@ BookDatabase::BookDatabase( const std::string & filename )
   /// Programming note:  An O(n) operation, like searching an unsorted vector, would not generally be implemented recursively.  The
   ///                    depth of recursion may be greater than the program's function call stack size.  But for this programming
   ///                    exercise, getting familiar with recursion is a goal.
+
+// In an ideal world, I would've been able to use std::unordered_map, but oh
+// well.
+
+Book* BookDatabase::find(const std::string& isbn) {
+  return find_rec(isbn, books.begin());
+}
+
+Book* BookDatabase::find_rec(const std::string& isbn, auto iter) {
+  if (iter == books.end()) return nullptr;
+  if (iter->isbn() == isbn) return &(*iter);
+  return find_rec(isbn, iter+1);
+}
+
+size_t BookDatabase::size() const {
+  return books.size();
+}
 
 /////////////////////// END-TO-DO (3) ////////////////////////////
