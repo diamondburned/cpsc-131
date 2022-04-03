@@ -25,7 +25,7 @@ namespace    // unnamed, anonymous namespace
     ///////////////////////// TO-DO (1) //////////////////////////////
       ///  Write the lines of code that compare two floating point numbers.  Return true when the left hand side (lhs) and the right
       ///  hand side (rhs) are within Epsilon, and false otherwise.
-      /// 
+      ///
       ///  See: "Floating point equality" in https://www.learncpp.com/cpp-tutorial/relational-operators-and-floating-point-comparisons/
       ///
       ///  Hint:  Avoid writing code that looks like this:
@@ -35,8 +35,8 @@ namespace    // unnamed, anonymous namespace
       ///           if (a < b) return true;
       ///           else       return false;
       ///         do this instead:
-      ///           return a < b;
-
+      ///           return a < b
+    return std::fabs( lhs - rhs ) < EPSILON;
     /////////////////////// END-TO-DO (1) ////////////////////////////
   }
 }    // unnamed, anonymous namespace
@@ -54,7 +54,11 @@ namespace    // unnamed, anonymous namespace
 // Default and Conversion Constructor
 Book::Book( std::string title,  std::string author,  std::string isbn,  double price )
 ///////////////////////// TO-DO (2) //////////////////////////////
-
+  : _isbn( std::move( isbn ) ),
+    _title( std::move( title ) ),
+    _author( std::move( author ) ),
+    _price( price )
+    {}
 /////////////////////// END-TO-DO (2) ////////////////////////////
 
 
@@ -63,7 +67,7 @@ Book::Book( std::string title,  std::string author,  std::string isbn,  double p
 // Copy constructor
 Book::Book( Book const & other )
 ///////////////////////// TO-DO (3) //////////////////////////////
-
+    = default;
 /////////////////////// END-TO-DO (3) ////////////////////////////
 
 
@@ -72,7 +76,7 @@ Book::Book( Book const & other )
 // Move constructor
 Book::Book( Book && other ) noexcept
 ///////////////////////// TO-DO (4) //////////////////////////////
-
+    = default;
 /////////////////////// END-TO-DO (4) ////////////////////////////
 
 
@@ -81,7 +85,7 @@ Book::Book( Book && other ) noexcept
 // Copy Assignment Operator
 Book & Book::operator=( Book const & rhs ) &
 ///////////////////////// TO-DO (5) //////////////////////////////
-
+    = default;
 /////////////////////// END-TO-DO (5) ////////////////////////////
 
 
@@ -90,7 +94,7 @@ Book & Book::operator=( Book const & rhs ) &
 // Move Assignment Operator
 Book & Book::operator=( Book && rhs ) & noexcept
 ///////////////////////// TO-DO (6) //////////////////////////////
-
+    = default;
 /////////////////////// END-TO-DO (6) ////////////////////////////
 
 
@@ -98,7 +102,7 @@ Book & Book::operator=( Book && rhs ) & noexcept
 // Destructor
 Book::~Book() noexcept
 ///////////////////////// TO-DO (7) //////////////////////////////
-
+    = default;
 /////////////////////// END-TO-DO (7) ////////////////////////////
 
 
@@ -116,7 +120,7 @@ Book::~Book() noexcept
 std::string const & Book::isbn() const &
 {
   ///////////////////////// TO-DO (8) //////////////////////////////
-
+  return _isbn;
   /////////////////////// END-TO-DO (8) ////////////////////////////
 }
 
@@ -127,7 +131,7 @@ std::string const & Book::isbn() const &
 std::string const & Book::title() const &
 {
   ///////////////////////// TO-DO (9) //////////////////////////////
-
+  return _title;
   /////////////////////// END-TO-DO (9) ////////////////////////////
 }
 
@@ -138,7 +142,7 @@ std::string const & Book::title() const &
 std::string const & Book::author() const &
 {
   ///////////////////////// TO-DO (10) //////////////////////////////
-
+  return _author;
   /////////////////////// END-TO-DO (10) ////////////////////////////
 }
 
@@ -148,7 +152,7 @@ std::string const & Book::author() const &
 double Book::price() const &
 {
   ///////////////////////// TO-DO (11) //////////////////////////////
-
+  return _price;
   /////////////////////// END-TO-DO (11) ////////////////////////////
 }
 
@@ -159,7 +163,7 @@ double Book::price() const &
 std::string Book::isbn() &&
 {
   ///////////////////////// TO-DO (12) //////////////////////////////
-
+  return std::move( _isbn );
   /////////////////////// END-TO-DO (12) ////////////////////////////
 }
 
@@ -170,7 +174,7 @@ std::string Book::isbn() &&
 std::string Book::title() &&
 {
   ///////////////////////// TO-DO (13) //////////////////////////////
-
+  return std::move( _title );
   /////////////////////// END-TO-DO (13) ////////////////////////////
 }
 
@@ -181,7 +185,7 @@ std::string Book::title() &&
 std::string Book::author() &&
 {
   ///////////////////////// TO-DO (14) //////////////////////////////
-
+  return std::move( _author );
   /////////////////////// END-TO-DO (14) ////////////////////////////
 }
 
@@ -200,7 +204,8 @@ std::string Book::author() &&
 Book & Book::isbn( std::string newIsbn ) &
 {
   ///////////////////////// TO-DO (15) //////////////////////////////
-
+  _isbn = std::move( newIsbn );
+  return *this;
   /////////////////////// END-TO-DO (15) ////////////////////////////
 }
 
@@ -211,7 +216,8 @@ Book & Book::isbn( std::string newIsbn ) &
 Book & Book::title( std::string newTitle ) &
 {
   ///////////////////////// TO-DO (16) //////////////////////////////
-
+  _title = std::move( newTitle );
+  return *this;
   /////////////////////// END-TO-DO (16) ////////////////////////////
 }
 
@@ -222,7 +228,8 @@ Book & Book::title( std::string newTitle ) &
 Book & Book::author( std::string newAuthor ) &
 {
   ///////////////////////// TO-DO (17) //////////////////////////////
-
+  _author = std::move( newAuthor );
+  return *this;
   /////////////////////// END-TO-DO (17) ////////////////////////////
 }
 
@@ -233,7 +240,8 @@ Book & Book::author( std::string newAuthor ) &
 Book & Book::price( double newPrice ) &
 {
   ///////////////////////// TO-DO (18) //////////////////////////////
-
+  _price = newPrice;
+  return *this;
   /////////////////////// END-TO-DO (18) ////////////////////////////
 }
 
@@ -278,7 +286,13 @@ std::weak_ordering Book::operator<=>( const Book & rhs ) const noexcept
   // (sorted) by ISBN, author, title, then price.
 
   ///////////////////////// TO-DO (19) //////////////////////////////
+  if( auto result = ( _isbn <=> rhs._isbn ); result != 0 ) return result;
+  if( auto result = ( _author <=> rhs._author ); result != 0 ) return result;
+  if( auto result = ( _title <=> rhs._title ); result != 0 ) return result;
 
+  if( floating_point_is_equal( _price, rhs._price ) ) return std::weak_ordering::equivalent;
+  if( _price < rhs._price ) return std::weak_ordering::less;
+  return std::weak_ordering::greater;
   /////////////////////// END-TO-DO (19) ////////////////////////////
 }
 
@@ -292,7 +306,10 @@ bool Book::operator==( const Book & rhs ) const noexcept
   // and then the most likely to be different first.
 
   ///////////////////////// TO-DO (20) //////////////////////////////
-
+  return floating_point_is_equal( _price, rhs._price )
+      && _isbn == rhs._isbn
+      && _title == rhs._title
+      && _author == rhs._author;
   /////////////////////// END-TO-DO (20) ////////////////////////////
 }
 
@@ -327,7 +344,26 @@ std::istream & operator>>( std::istream & stream, Book & book )
     /// Hint:  Use std::quoted to read and write quoted strings.  See
     ///        1) https://en.cppreference.com/w/cpp/io/manip/quoted
     ///        2) https://www.youtube.com/watch?v=Mu-GUZuU31A
+  auto is_comma = [&stream]()
+  {
+    char comma = 0;
+    stream >> comma;
+    return comma == ',';
+  };
 
+  Book tmp;
+
+  // Use std::ws to consume the whitespaces in-between.
+  if( stream >> std::ws >> std::quoted( tmp._isbn ) && is_comma() &&
+      stream >> std::ws >> std::quoted( tmp._title ) && is_comma() &&
+      stream >> std::ws >> std::quoted( tmp._author ) && is_comma() &&
+      stream >> std::ws >> tmp._price )
+    // Commit the item only if we can read everything.
+    book = std::move( tmp );
+  else
+    stream.setstate( std::ios::failbit );
+
+  return stream;
   /////////////////////// END-TO-DO (21) ////////////////////////////
 }
 
@@ -339,6 +375,10 @@ std::ostream & operator<<( std::ostream & stream, const Book & book )
 {
   ///////////////////////// TO-DO (22) //////////////////////////////
     /// This function should be symmetrical with operator>> above.  Read what your write, and write what you read
-
+  return stream
+      << std::quoted( book._isbn ) << ", "
+      << std::quoted( book._title ) << ", "
+      << std::quoted( book._author ) << ", "
+      << book._price;
   /////////////////////// END-TO-DO (22) ////////////////////////////
 }
