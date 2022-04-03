@@ -89,6 +89,48 @@ int main()
      /// bottom of the lists.  Remove books from the top, middle, and bottom.  Create, concatenate, rearrange, and compare several
      /// lists.  Have some fun with it!  The purpose is to show me you as a client understand how to *use* the BookList.
 
+    // I don't know why I picked these. I just did.
+    BookList diaryOfAWimpyKid = {
+      {"Diary of a Wimpy Kid", "Jeff Kinney"},
+      {"Rodrick Rules", "Jeff Kinney"},
+      // {"The Last Straw", "Jeff Kinney"}, -- [2]
+      // {"Dog Days", "Jeff Kinney"},       -- [3]
+      {"The Ugly Truth", "Jeff Kinney"},
+      {"Wrecking Ball", "Jeff Kinney"},
+      // {"The Deep End", "Jeff Kinney"},
+      // {"Big Shot", "Jeff Kinney"},
+    };
+
+    // Add the commented out books.
+    diaryOfAWimpyKid.insert({"The Last Straw", "Jeff Kinney"}, 2);
+    diaryOfAWimpyKid.insert({"Dog Days", "Jeff Kinney"}, 3);
+
+    // Append the 2 latest missing books, but I accidentally have a duplicate.
+    diaryOfAWimpyKid += {
+      {"The Deep End", "Jeff Kinney"},
+      {"Big Shot", "Jeff Kinney"},
+      {"Wrecking Ball", "Jeff Kinney"},
+    };
+
+    // Above list but complete.
+    BookList expected = {
+      {"Diary of a Wimpy Kid", "Jeff Kinney"},
+      {"Rodrick Rules", "Jeff Kinney"},
+      {"The Last Straw", "Jeff Kinney"},
+      {"Dog Days", "Jeff Kinney"},
+      {"The Ugly Truth", "Jeff Kinney"},
+      {"Wrecking Ball", "Jeff Kinney"},
+      {"The Deep End", "Jeff Kinney"},
+      {"Big Shot", "Jeff Kinney"},
+    };
+
+    if (diaryOfAWimpyKid != expected) {
+        std::cerr
+          << "Final list does not match expected\n"
+          << "  Expected:" << expected << "\n"
+          << "  Got:" << diaryOfAWimpyKid << "\n";
+        std::cerr << "Custom test results: FAIL\n";
+    }
     /////////////////////// END-TO-DO (1) ////////////////////////////
   }
 

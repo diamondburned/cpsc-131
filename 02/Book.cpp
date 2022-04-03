@@ -363,7 +363,8 @@ std::istream & operator>>( std::istream & stream, Book & book )
   else
     stream.setstate( std::ios::failbit );
 
-  return stream;  /////////////////////// END-TO-DO (21) ////////////////////////////
+  return stream;
+  /////////////////////// END-TO-DO (21) ////////////////////////////
 }
 
 
