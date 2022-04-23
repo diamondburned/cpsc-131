@@ -1,44 +1,33 @@
 { systemPkgs ? import <nixpkgs> {} }:
 
-# let src = systemPkgs.fetchFromGitHub {
-# 		owner = "NixOS";
-# 		repo  = "nixpkgs";
-# 		rev   = "48d63e9";
-# 		hash  = "sha256:0dcxc4yc2y5z08pmkmjws4ir0r2cbc5mha2a48bn0bk7nxc6wx8g";
-# 	};
+let lib  = systemPkgs.lib;
+	pkgs =
+		if (lib.versionAtLeast systemPkgs.llvmPackages_latest.release_version "13")
+		then systemPkgs
+		else import (systemPkgs.fetchFromGitHub {
+			owner = "NixOS";
+			repo  = "nixpkgs";
+			rev   = "48d63e9";
+			hash  = "sha256:0dcxc4yc2y5z08pmkmjws4ir0r2cbc5mha2a48bn0bk7nxc6wx8g";
+		});
 
-# 	pkgs = import (src) {};
-let pkgs = systemPkgs;
-
-	intel2GAS = pkgs.stdenv.mkDerivation rec {
-		name = "intel2GAS";
-	
-		src = builtins.fetchurl {
-			url    = "http://ftp.debian.org/debian/pool/main/i/intel2gas/intel2gas_1.3.3.orig.tar.gz";
-			sha256 = "0f4mcs5z41n211g5mlrq1szgp3r0x25hrx4chy718k5igi1mbfwa";
-		};
-	
-		# Required to build intel2gas. Compiling this may spew out some warnings,
-		# but they're safe to ignore. The entire compilation should take a few
-		# seconds.
-		preBuild = ''
-			export NIX_CFLAGS_COMPILE="$NIX_CFLAGS_COMPILE -fpermissive"
-		'';
-	};
-
+	llvmPackages = pkgs.llvmPackages_latest;
+	clang-unwrapped = llvmPackages.clang-unwrapped;
+	clang = llvmPackages.clang;
+	# clang = llvmPackages.libstdcxxClang;
 
 	# clangd hack.
 	clangd = pkgs.writeScriptBin "clangd" ''
 	    #!${pkgs.stdenv.shell}
-		export CPATH="$(${pkgs.llvmPackages_latest.clang}/bin/clang -E - -v <<< "" \
+		export CPATH="$(${clang}/bin/clang -E - -v <<< "" \
 			|& ${pkgs.gnugrep}/bin/grep '^ /nix' \
 			|  ${pkgs.gawk}/bin/awk 'BEGIN{ORS=":"}{print substr($0, 2)}' \
 			|  ${pkgs.gnused}/bin/sed 's/:$//')"
-		export CPLUS_INCLUDE_PATH="$(${pkgs.llvmPackages_latest.clang}/bin/clang++ -E - -v <<< "" \
+		export CPLUS_INCLUDE_PATH="$(${clang}/bin/clang++ -E - -v <<< "" \
 			|& ${pkgs.gnugrep}/bin/grep '^ /nix' \
 			|  ${pkgs.gawk}/bin/awk 'BEGIN{ORS=":"}{print substr($0, 2)}' \
 			|  ${pkgs.gnused}/bin/sed 's/:$//')"
-	    ${pkgs.llvmPackages_latest.clang-unwrapped}/bin/clangd
+	    ${clang-unwrapped}/bin/clangd
 	'';
 
 	gccShell = pkgs.mkShell.override {
@@ -46,7 +35,8 @@ let pkgs = systemPkgs;
 		stdenv = pkgs.gcc11Stdenv;
 	};
 
-	PROJECT_ROOT = builtins.toString ./.;
+	PROJECT_ROOT   = builtins.toString ./.;
+	PROJECT_SYSTEM = pkgs.system;
 
 	# Compliance_Workarounds is omitted because clang++ really doesn't want to
 	# see chrono::hh_mm_ss.
@@ -118,9 +108,46 @@ let pkgs = systemPkgs;
 		let dst = pkgs.writeTextDir name text;
 		in "${dst}/${name}";
 
+	build_sh = ''
+		set -e
+
+		flagfile() {
+			tr $'\n' ' ' < "$PROJECT_ROOT/$1"
+		}
+
+		executableFileName=$(basename "$PWD")
+		readarray -t sourceFiles < <(find ./ -path ./.\* -prune -o -name "*.cpp" -print)
+
+		[[ $PROJECT_SYSTEM != *"darwin" ]] &&
+			# TODO: check libcxx instead of OS. Linux might be libcxx too.
+			clang++ \
+				$(flagfile compile_flags.txt) \
+				-o "''${executableFileName}_clang++" "''${sourceFiles[@]}"
+
+		g++ \
+			$(flagfile compile_flags_g++.txt) \
+			-o "''${executableFileName}_g++" "''${sourceFiles[@]}"
+	'';
+
+	clean_sh = ''
+		for exec in $(find ./ -path ./.\* -prune -o -print -executable); {
+			[[ $exec == *"_clang++" || $exec == *"_g++" ]] && {
+				echo rm "$exec"
+				rm "$exec"
+			}
+		}
+	'';
+
+	run_sh = ''
+		set -e
+
+		build.sh
+		"./$(basename "$PWD")_g++" | tee output.txt
+	'';
+
 in gccShell {
 	# Poke a PWD hole for our shell scripts to utilize.
-	inherit PROJECT_ROOT;
+	inherit PROJECT_ROOT PROJECT_SYSTEM;
 
 	shellHook = ''
 		# Prepare the project directory environment.
@@ -128,40 +155,27 @@ in gccShell {
 		cp -f ${writeText "compile_flags_g++.txt" gccFlags} $PROJECT_ROOT/
 	'';
 
-	buildInputs = [ intel2GAS clangd ] ++ (with pkgs; [
+	buildInputs = [
+		clangd
+		clang
+	] ++ (with pkgs; [
 		# Shell scripts.
-		(pkgs.writeShellScriptBin "build.sh" (builtins.readFile ./build.sh))
-		(pkgs.writeShellScriptBin "Build.sh" (builtins.readFile ./build.sh))
-		(pkgs.writeShellScriptBin "clean.sh" (builtins.readFile ./clean.sh))
+		(pkgs.writeShellScriptBin "build.sh" build_sh)
+		(pkgs.writeShellScriptBin "Build.sh" build_sh)
+		(pkgs.writeShellScriptBin "clean.sh" clean_sh)
+		(pkgs.writeShellScriptBin "Clean.sh" clean_sh)
+		(pkgs.writeShellScriptBin "run.sh"   run_sh)
+		(pkgs.writeShellScriptBin "Run.sh"   run_sh)
+
 		# Apparently we get a clang-format that doesn't fucking work. Using clang-format makes the
 		# autograder flag the assignment to an F. Brilliant! Fucking lovely!
 		(pkgs.writeShellScriptBin "clang-format" ''sed "s/\t/  /g"'')
 
 		gcc11
-		llvmPackages_latest.clang
-
-		intel2GAS
-		a2ps
 		automake
 		autoconf
-		cimg
-		cscope
 		curl
-		enscript
 		gdb
 		git
-		gnupg
-		gthumb
-		readline
-		lldb
-		nasm
-		nfs-utils
-		subversion
-		
-		# Google Test Libraries.
-		gtest
-		gmock
-
-		gnome3.seahorse
 	]);
 }
