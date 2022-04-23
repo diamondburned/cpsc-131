@@ -376,9 +376,9 @@ std::ostream & operator<<( std::ostream & stream, const Book & book )
   ///////////////////////// TO-DO (22) //////////////////////////////
     /// This function should be symmetrical with operator>> above.  Read what your write, and write what you read
   return stream
-      << std::quoted( book._isbn ) << ", "
-      << std::quoted( book._title ) << ", "
-      << std::quoted( book._author ) << ", "
+      << std::quoted( book._isbn ) << ",  "
+      << std::quoted( book._title ) << ",  "
+      << std::quoted( book._author ) << ",  "
       << book._price;
   /////////////////////// END-TO-DO (22) ////////////////////////////
 }
