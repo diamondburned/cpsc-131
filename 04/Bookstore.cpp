@@ -2,6 +2,12 @@
   /// Include necessary header files
   /// Hint:  Include what you use, use what you include
 
+#include "Bookstore.hpp"
+#include "BookDatabase.hpp"
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+
 /////////////////////// END-TO-DO (1) ////////////////////////////
 
 
@@ -31,6 +37,13 @@ Bookstore::Bookstore( const std::string & persistentInventoryDB )
     ///        1) https://en.cppreference.com/w/cpp/io/manip/quoted
     ///        2) https://www.youtube.com/watch?v=Mu-GUZuU31A
 
+  std::string isbn;
+  unsigned int quantity = 0;
+
+  while (fin >> std::quoted(isbn) >> quantity) {
+    _inventoryDB[isbn] = quantity;
+  }
+
   /////////////////////// END-TO-DO (2) ////////////////////////////
 }                                                                 // File is closed as fin goes out of scope
 
@@ -56,6 +69,13 @@ Bookstore::BooksSold Bookstore::ringUpAllCustomers( const ShoppingCarts & shoppi
   ///////////////////////// TO-DO (3) //////////////////////////////
     ///  Ring up each customer accumulating the books purchased
     ///  Hint:  merge each customer's purchased books into today's sales.  (https://en.cppreference.com/w/cpp/container/set/merge)
+
+  for (const auto& cartsPair : shoppingCarts) {
+    std::cout
+      << "\n"
+      << cartsPair.first << "'s shopping cart contains:\n";
+    todaysSales.merge(ringUpCustomer(cartsPair.second));
+  }
 
   /////////////////////// END-TO-DO (3) ////////////////////////////
 
@@ -95,6 +115,32 @@ Bookstore::BooksSold Bookstore::ringUpCustomer( const ShoppingCart & shoppingCar
     ///       2.2.3.2              Add the book's isbn to the list of books purchased
     ///       3         Print the total amount due on the receipt
 
+  double amountDue = 0;
+
+  for (const auto& cartPair : shoppingCart) {
+    auto* book = worldWideBookDatabase.find(cartPair.first);
+    if (book == nullptr) {
+      // Not found.
+      std::cout
+        << "\t" << std::quoted(cartPair.first) << " "
+        << "(" << cartPair.second.title() << ") not found, the book is free!\n";
+      continue;
+    }
+
+    std::cout << "\t" << *book << "\n";
+
+    amountDue += book->price();
+    purchasedBooks.insert(book->isbn());
+
+    // Decrease the number of books in the inventory.
+    const auto& inventoryPair = _inventoryDB.find(cartPair.first);
+    inventoryPair->second--;
+  }
+
+  std::cout
+    << "\t-------------------------\n"
+    << "\tTotal  $" << amountDue << "\n";
+
   /////////////////////// END-TO-DO (4) ////////////////////////////
 
   return purchasedBooks;
@@ -131,6 +177,50 @@ void Bookstore::reorderItems( BooksSold & todaysSales )
     ///        2       Reset the list of book sold today so the list can be reused again later
     ///
     /// Take special care to avoid excessive searches in your solution
+
+  std::cout
+    << "Re-ordering books the store is running low on.\n";
+
+  int idx = 1;
+
+  for (const auto& soldISBN : todaysSales) {
+    // Only a single lookup per iteration!
+    const auto& inventoryPair = _inventoryDB.find(soldISBN);
+
+    bool isInInventory = inventoryPair != _inventoryDB.end();
+    auto& qty = inventoryPair->second;
+
+    if (isInInventory && qty >= REORDER_THRESHOLD) {
+      continue;
+    }
+
+    std::cout << "\n " << idx << ":  ";
+    idx++;
+
+    auto* book = worldWideBookDatabase.find(soldISBN);
+    if (book == nullptr) {
+      std::cout << "{" << std::quoted(soldISBN) << "}\n";
+      continue;
+    }
+
+    std::cout
+      << "{" << *book << "}\n"
+      << "        ";
+
+    if (!isInInventory) {
+      std::cout << "*** no longer sold in this store and will not be re-ordered\n";
+      continue;
+    }
+
+    std::cout
+      << "only " << qty << " remain in stock which is " << REORDER_THRESHOLD - qty << " "
+      << "unit(s) below reorder threshold (" << REORDER_THRESHOLD << "), "
+      << "re-ordering " << LOT_COUNT << " more\n";
+
+    qty += LOT_COUNT;
+  }
+
+  todaysSales.clear();
 
   /////////////////////// END-TO-DO (5) ////////////////////////////
 }

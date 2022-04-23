@@ -4,6 +4,10 @@
   ///
   /// Do not put anything else in this section, i.e. comments, classes, functions, etc.  Only #include directives
 
+#include "BookDatabase.hpp"
+#include <filesystem>
+#include <fstream>
+
 /////////////////////// END-TO-DO (1) ////////////////////////////
 
 
@@ -55,6 +59,11 @@ BookDatabase::BookDatabase( const std::string & filename )
     /// Hint:  Use your Book's extraction operator to read Books, don't reinvent that here.
     ///        Read books until end of file pushing each book into the data store as they're read.
 
+  Book tmp;
+  while (fin >> tmp) {
+    _data[tmp.isbn()] = tmp;
+  }
+
   /////////////////////// END-TO-DO (2) ////////////////////////////
 
   // Note:  The file is intentionally not explicitly closed.  The file is closed when fin goes out of scope - for whatever
@@ -76,5 +85,15 @@ BookDatabase::BookDatabase( const std::string & filename )
   /// In the last assignment you implemented BookDatabase::find() as a recursive linear search (an O(n) operation).  In this
   /// assignment, implement BookDatabase::find() as a binary search (an O(log n) operation) by delegating to the std::map's binary
   /// search function find().
+
+Book* BookDatabase::find(const std::string& isbn) {
+  auto book = _data.find(isbn);
+  if (book == _data.end()) {
+    return nullptr;
+  }
+  return &book->second;
+}
+
+std::size_t BookDatabase::size() const { return _data.size(); }
 
 /////////////////////// END-TO-DO (3) ////////////////////////////

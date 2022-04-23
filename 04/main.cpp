@@ -20,6 +20,7 @@ int main()
     ///////////////////////// TO-DO (1) //////////////////////////////
       /// Create your bookstore
       ///
+    auto bookstore = Bookstore();
 
     /////////////////////// END-TO-DO (1) ////////////////////////////
 
@@ -28,6 +29,7 @@ int main()
       /// Now, let's pretend your bookstore is busy with several shoppers, each pushing a shopping cart filled with a bunch of books
       /// by using your store's makeShoppingCarts function to create a collection of shopping carts.
       ///
+    auto shoppingCarts = bookstore.makeShoppingCarts();
 
     /////////////////////// END-TO-DO (2) ////////////////////////////
 
@@ -38,6 +40,7 @@ int main()
       /// each shopper, scan all the books in their shopping cart, print a receipt with an amount due, deduct the items bought from
       /// the store's inventory, and returns a collection of books sold.
       ///
+    auto booksSold = bookstore.ringUpAllCustomers(shoppingCarts);
 
     /////////////////////// END-TO-DO (3) ////////////////////////////
 
@@ -49,6 +52,8 @@ int main()
       /// The store's managers have decided to stop selling Wild Mammals (ISBN: 9802161748), so remove this from the store's
       /// inventory.
       ///
+    auto& inventory = bookstore.getInventory();
+    inventory.erase("9802161748"); // Wild Mammals
 
     /////////////////////// END-TO-DO (4) ////////////////////////////
 
@@ -57,6 +62,8 @@ int main()
       /// All the shoppers have now checkout out and it's late in the day.  Close your store, take inventory, and if you sold enough
       /// books to fall below your re-order threshold, order more by using your store's reorderItems function passing the
       /// collection of books sold.
+    std::cout << "\n\n\n\n\n";
+    bookstore.reorderItems(booksSold);
 
     /////////////////////// END-TO-DO (5) ////////////////////////////
   }
