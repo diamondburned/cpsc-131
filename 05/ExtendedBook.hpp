@@ -28,5 +28,6 @@ class ExtendedBook : public Book
       /// implementation of a hash table, to store the association of words (key) to the number of times a word occurs (value), also
       /// called the word's frequency.
 
+    std::unordered_map<std::string, std::size_t> frequency;
     /////////////////////// END-TO-DO (1) ////////////////////////////
 };

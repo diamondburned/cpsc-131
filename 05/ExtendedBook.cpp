@@ -57,6 +57,24 @@ namespace
     /// parentheses, brackets, etc. should be removed, but intra - word punctuation should remain. A working sanitize function has
     /// been provided.
 
+ExtendedBook::ExtendedBook(std::string theTitle, std::string theAuthor, std::string theIsbn, double thePrice)
+: Book(std::move(theTitle), std::move(theAuthor), std::move(theIsbn), thePrice)
+{
+  // Something something premature optimization is the root of all evil.
+  // Hopefully, doing this will make C++ regrow the map less often.
+  const auto reserveWords = 1000;
+  frequency.reserve(reserveWords);
+
+  // Important: we std::moved the ISBN into the Book class, so we cannot use
+  // the _isbn parameter. We access it using the method instead.
+  std::ifstream file(this->isbn() + ".bok");
+
+  std::string word;
+  while (file >> word) {
+    word = sanitize(word);
+    frequency[word]++;
+  }
+};
 /////////////////////// END-TO-DO (1) ////////////////////////////
 
 
@@ -64,6 +82,9 @@ namespace
 ///////////////////////// TO-DO (2) //////////////////////////////
   /// Implement numberOfWords - This function takes no arguments and returns the number of unique (sanitized) words.
 
+std::size_t ExtendedBook::numberOfWords() const {
+  return frequency.size();
+}
 /////////////////////// END-TO-DO (2) ////////////////////////////
 
 
@@ -72,6 +93,13 @@ namespace
   /// Implement wordCount - This function takes a constant reference to a standard string as a parameter and returns the frequency
   /// of occurrence of that sanitized word.
 
+std::size_t ExtendedBook::wordCount(const std::string & word) const {
+  auto it = frequency.find(sanitize(word));
+  if (it == frequency.end()) {
+    return 0;
+  }
+  return it->second;
+}
 /////////////////////// END-TO-DO (3) ////////////////////////////
 
 
@@ -82,6 +110,19 @@ namespace
     /// frequency table. Then visit every word in your frequency table comparing its frequency to the current most frequent word.
     /// Adopt that word as your most frequent if its frequency is grater than your current most frequent.
 
+std::string ExtendedBook::mostFrequentWord() const {
+  std::size_t maxFreq = 0;
+  std::string maxWord; // https://stackoverflow.com/questions/17738439/value-and-size-of-an-uninitialized-stdstring-variable-in-c
+
+  for (const auto& pair : frequency) {
+    if (pair.second > maxFreq) {
+      maxWord = pair.first;
+      maxFreq = pair.second;
+    }
+  }
+
+  return maxWord;
+}
 /////////////////////// END-TO-DO (4) ////////////////////////////
 
 
@@ -94,4 +135,16 @@ namespace
     /// Assume the size of the bucket with the most word/count pairs is zero.  Then visit each bucket (indexed from 0..bucket_count)
     /// and if the size of that bucket (bucket_size) is greater than your current max size, adopt that as your new current max size.
 
+std::size_t ExtendedBook::maxBucketSize() const {
+  std::size_t maxBucketSize = 0;
+
+  for (std::size_t i = 0; i < frequency.bucket_count(); i++) {
+    std::size_t thisSize = frequency.bucket_size(i);
+    if (thisSize > maxBucketSize) {
+      maxBucketSize = thisSize;
+    }
+  }
+
+  return maxBucketSize;
+}
 /////////////////////// END-TO-DO (5) ////////////////////////////
